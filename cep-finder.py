@@ -1,44 +1,45 @@
-import json,requests,os
+# -*- coding: utf-8 -*-
 
-if os.name == 'nt':
-    limpa = 'cls'
-else:
-    limpa = 'clear'
+import requests
+import json
+import telepot
+import random
+import re
+import sys
+import time
+# Bot Para consultar CEP e IBGE com Telegram API
+# Modo de uso: /cep 04320-040
+# Developers:
+# Jonatas FIL a.k.a Dkr and Tesla
 
-option = 1
 
-while option == 1:
-    os.system(limpa)
-    print("#" * 20)
-    print("##   CEP Finder   ##")
-    print("## @rafaelfilholm ##")
-    print("#" * 20)
+#bot = telepot.Bot()
 
-    cep_input = input("\nDigite um CEP(apenas os dígitos): \n> ")
+reload(sys)
+sys.setdefaultencoding('utf8')
 
-    query = requests.get('http://viacep.com.br/ws/{}/json/'.format(cep_input))
+def handle(msg):
+    tipomsg, tipochat, chat_id = telepot.glance(msg)
+    #print(msg)
 
-    endereco = json.loads(query.content)
+    command = msg['text'].split(' ')
+    if command[0] == '/cep':
+        cep = command[1]
+        api = "https://viacep.com.br/ws/"+cep+"/json/unicode/" # API JSON
 
-    cep = endereco["cep"]
-    logradouro  = endereco["logradouro"].upper()
-    complemento = endereco["complemento"].upper()
-    bairro = endereco["bairro"].upper()
-    localidade = endereco["localidade"].upper()
-    uf = endereco["uf"].upper()
-    ibge = endereco["ibge"]
+        r = requests.get(api)
+        results = json.loads(r.content)
+        print(results)
 
-    print("==> Endereço Encontrado!!! <==")
-    print("CEP: {}".format(cep))
-    print("LOGRADOURO: {}".format(logradouro))
-    print("COMPLEMENTO: {}".format(complemento))
-    print("BAIRRO: {}".format(bairro))
-    print("LOCALIDADE: {}".format(localidade))
-    print("UNIDADE FEDERATIVA: {}".format(uf))
-    print("CÓDIGO IBGE DA CIDADE: {}".format(ibge))
+        txt = 'Consulta de CEP e IBGE no Telegram:\n{Criado por Dkr e Tesla.}\n\nCep: '+results['cep']+'\nLogradouro: '+results['logradouro']+'\nComplemento: '+results['complemento']+'\nBairro: '+results['bairro']+'\nLocalidade: '+results['localidade']+'\nUF: '+results['uf']+'\nIBGE: '+results['ibge']
+        bot.sendMessage(chat_id, txt) # Envia O resultado
 
-    print("\nDeseja Pesquisa outro CEP?")
-    option = int(input("1. Sim, limpar e pesquisar novamente.\n2. Não, sair.\n> "))
+TOKEN = ''
 
-print("Finalizado!")
-print("By @rafaelfilholm")
+bot = telepot.Bot('1246235471:AAFEyhP6EaAuDCrO-AJZgr1V8vkIFVjsB0M') # SUA API AQUI
+bot.message_loop(handle)
+print ('Aguarde...')
+print ('Modo de uso: /cep 04320-040')
+
+while 1:
+    time.sleep(10)
